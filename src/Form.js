@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import './Form.css'
 
 function Form() {
    const [form, setForm] = useState({ 
@@ -13,6 +14,7 @@ function Form() {
    });
 
    const [result, setResult] = useState("");
+   const [loading, setLoading] = useState(false);
 
    const handleSubmit = (event) => {
       event.preventDefault();
@@ -26,6 +28,9 @@ function Form() {
       form_data.append("6", form.bmi);
       form_data.append("7", form.diabetes_pedigree);
       form_data.append("8", form.age);
+
+      setLoading(true);
+
       fetch('https://dsmodeldeployment9.herokuapp.com/predict',{
          method:'POST',
          body: form_data
@@ -33,6 +38,7 @@ function Form() {
          .then(response => response.text())
          .then(html => {
             setResult(html);
+            setLoading(false)
          })
    };
 
@@ -42,21 +48,38 @@ function Form() {
       setForm({ ...form, [name]: value });
    }
 
+   const handleClear = () =>{
+      setForm({
+         pregnacies: "",
+         glucose: "",
+         blood_pressure: "",
+         skin_thickness: "",
+         insulin_level: "",
+         bmi: "",
+         diabetes_pedigree: "",
+         age: ""
+      });
+      setResult("");
+   };
+
+   
+
    return (
       <form onSubmit={handleSubmit}>
          <h4>Diabetes Prediction Model</h4>
          <p>Example to predict diabetes probability</p>
-         <input type="number" name="pregnacies" onChange={onChange} placeholder="Number of pregnacies" />
-         <input type="number" name="glucose" onChange={onChange} placeholder="Glucose level in sugar" />
-         <input type="number" name="blood_pressure" onChange={onChange} placeholder="Blood pressure" />
-         <input type="number" name="skin_thickness" onChange={onChange} placeholder="Skin Thickness" />
-         <input type="number" name="insulin_level" onChange={onChange} placeholder="Insulin Level" />
-         <input type="number" name="bmi" onChange={onChange} placeholder="BMI" />
-         <input type="number" name="diabetes_pedigree" onChange={onChange} placeholder="Diabetes Pedigree" />
-         <input type="number" name="age" onChange={onChange} placeholder="Age" />
-         <button type="submit">Submit Form</button>
+         <input type="number" name="pregnacies" value={form.pregnacies} onChange={onChange} placeholder="Number of pregnacies" required/>
+         <input type="number" name="glucose" value={form.glucose} onChange={onChange} placeholder="Glucose level in sugar" required/>
+         <input type="number" name="blood_pressure"  value={form.blood_pressure} onChange={onChange} placeholder="Blood pressure" required/>
+         <input type="number" name="skin_thickness" value={form.skin_thickness} onChange={onChange} placeholder="Skin Thickness" required/>
+         <input type="number" name="insulin_level" value={form.insulin_level} onChange={onChange} placeholder="Insulin Level" required/>
+         <input type="number" name="bmi" value={form.bmi} onChange={onChange} placeholder="BMI" required/>
+         <input type="number" name="diabetes_pedigree" value={form.diabetes_pedigree} onChange={onChange} placeholder="Diabetes Pedigree" required/>
+         <input type="number" name="age" value={form.age} onChange={onChange} placeholder="Age" required/>
+         <button type="submit" disabled={loading}>{loading ? "Predicting results...":"Submit form"}</button>
 
-         {result && <div dangerouslySetInnerHTML={{__html: result}}/>}
+         {result && <div dangerouslySetInnerHTML={{__html: result}} className='result'/>}
+         {result && <span onClick={handleClear}>Clear Prediction</span>}
       </form>
    );
 }
